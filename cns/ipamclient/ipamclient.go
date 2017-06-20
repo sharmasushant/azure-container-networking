@@ -6,7 +6,6 @@ package ipamclient
 import (
 	"bytes"
 	"encoding/json"
-	"net/http"
 
 	"fmt"
 
@@ -33,20 +32,16 @@ func NewIpamClient(url string) (*IpamClient, error) {
 func (ic *IpamClient) GetAddressSpace() (string, error) {
 	log.Printf("[Azure CNS] GetAddressSpace Request")
 
-	url := ic.connectionURL + getAddressSpacesPath
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	client, err := getClient(ic.connectionURL)
 	if err != nil {
-		log.Printf("[Azure CNS] Error received while creating http GET request for AddressSpace %v", err.Error())
 		return "", err
 	}
 
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	url := ic.connectionURL + getAddressSpacesPath
 
-	client := &http.Client{}
-
-	res, err := client.Do(req)
-	if res == nil {
+	res, err := client.Get(url)
+	if err != nil {
+		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
 		return "", err
 	}
 
@@ -74,6 +69,11 @@ func (ic *IpamClient) GetPoolID(asID, subnet string) (string, error) {
 	var body bytes.Buffer
 	log.Printf("[Azure CNS] GetPoolID Request")
 
+	client, err := getClient(ic.connectionURL)
+	if err != nil {
+		return "", err
+	}
+
 	url := ic.connectionURL + requestPoolPath
 
 	payload := &requestPoolRequest{
@@ -83,17 +83,9 @@ func (ic *IpamClient) GetPoolID(asID, subnet string) (string, error) {
 
 	json.NewEncoder(&body).Encode(payload)
 
-	req, err := http.NewRequest(http.MethodGet, url, &body)
+	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] Error received while creating http GET request for GetPoolID asID: %v poolid: %v err:%v", asID, subnet, err.Error())
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if res == nil {
+		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
 		return "", err
 	}
 
@@ -112,6 +104,7 @@ func (ic *IpamClient) GetPoolID(asID, subnet string) (string, error) {
 
 		return resp.PoolID, nil
 	}
+
 	log.Printf("[Azure CNS] GetPoolID invalid http status code: %v err:%v", res.StatusCode, err.Error())
 	return "", err
 
@@ -122,6 +115,11 @@ func (ic *IpamClient) ReserveIPAddress(poolID string, reservationID string) (str
 	var body bytes.Buffer
 	log.Printf("[Azure CNS] ReserveIpAddress")
 
+	client, err := getClient(ic.connectionURL)
+	if err != nil {
+		return "", err
+	}
+
 	url := ic.connectionURL + reserveAddrPath
 
 	payload := &reserveAddrRequest{
@@ -130,19 +128,12 @@ func (ic *IpamClient) ReserveIPAddress(poolID string, reservationID string) (str
 		Options: make(map[string]string),
 	}
 	payload.Options[ipam.OptAddressID] = reservationID
+
 	json.NewEncoder(&body).Encode(payload)
 
-	req, err := http.NewRequest(http.MethodGet, url, &body)
+	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] Error received while creating http GET request for reserve IP resid: %v poolid: %v err:%v", reservationID, poolID, err.Error())
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if res == nil {
+		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
 		return "", err
 	}
 
@@ -172,6 +163,11 @@ func (ic *IpamClient) ReleaseIPAddress(poolID string, reservationID string) erro
 	var body bytes.Buffer
 	log.Printf("[Azure CNS] ReleaseIpAddress")
 
+	client, err := getClient(ic.connectionURL)
+	if err != nil {
+		return err
+	}
+
 	url := ic.connectionURL + releaseAddrPath
 
 	payload := &releaseAddrRequest{
@@ -184,17 +180,9 @@ func (ic *IpamClient) ReleaseIPAddress(poolID string, reservationID string) erro
 
 	json.NewEncoder(&body).Encode(payload)
 
-	req, err := http.NewRequest(http.MethodGet, url, &body)
+	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] Error received while creating http GET request for ReleaseIP resid: %v poolid: %v err:%v", reservationID, poolID, err.Error())
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if res == nil {
+		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
 		return err
 	}
 
@@ -223,6 +211,10 @@ func (ic *IpamClient) GetIPAddressUtilization(poolID string) (int, int, []string
 	var body bytes.Buffer
 	log.Printf("[Azure CNS] GetIPAddressUtilization")
 
+	client, err := getClient(ic.connectionURL)
+	if err != nil {
+		return 0, 0, nil, err
+	}
 	url := ic.connectionURL + getPoolInfoPath
 
 	payload := &getPoolInfoRequest{
@@ -231,17 +223,8 @@ func (ic *IpamClient) GetIPAddressUtilization(poolID string) (int, int, []string
 
 	json.NewEncoder(&body).Encode(payload)
 
-	req, err := http.NewRequest(http.MethodGet, url, &body)
+	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] Error received while creating http GET request for GetIPUtilization poolid: %v err:%v", poolID, err.Error())
-		return 0, 0, nil, err
-	}
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-
-	if res == nil {
 		return 0, 0, nil, err
 	}
 
