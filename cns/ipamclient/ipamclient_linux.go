@@ -18,16 +18,16 @@ const (
 )
 
 //getClient - returns unix http client
-func getClient(url string) (http.Client, error) {
-	var httpc http.Client
+func getClient(url string) (*http.Client, error) {
+	var httpc *http.Client
 	if url == defaultIpamPluginURL {
 		dialContext, err := net.Dial("unix", pluginSockPath)
 		if err != nil {
 			log.Printf("[Azure CNS] Error.Dial context error %v", err.Error())
-			return httpc, err
+			return nil, err
 		}
 
-		httpc = http.Client{
+		httpc = &http.Client{
 			Transport: &http.Transport{
 				DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
 					return dialContext, nil
@@ -35,7 +35,7 @@ func getClient(url string) (http.Client, error) {
 			},
 		}
 	} else {
-		httpc = http.Client{}
+		httpc = &http.Client{}
 	}
 
 	return httpc, nil
