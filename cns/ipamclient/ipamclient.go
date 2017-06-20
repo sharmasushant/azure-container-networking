@@ -39,9 +39,9 @@ func (ic *IpamClient) GetAddressSpace() (string, error) {
 
 	url := ic.connectionURL + getAddressSpacesPath
 
-	res, err := client.Get(url)
+	res, err := client.Post(url, "application/json", nil)
 	if err != nil {
-		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
+		log.Printf("[Azure CNS] HTTP Post returned error %v", err.Error())
 		return "", err
 	}
 
@@ -85,7 +85,7 @@ func (ic *IpamClient) GetPoolID(asID, subnet string) (string, error) {
 
 	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
+		log.Printf("[Azure CNS] HTTP Post returned error %v", err.Error())
 		return "", err
 	}
 
@@ -133,7 +133,7 @@ func (ic *IpamClient) ReserveIPAddress(poolID string, reservationID string) (str
 
 	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
+		log.Printf("[Azure CNS] HTTP Post returned error %v", err.Error())
 		return "", err
 	}
 
@@ -182,7 +182,7 @@ func (ic *IpamClient) ReleaseIPAddress(poolID string, reservationID string) erro
 
 	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
-		log.Printf("[Azure CNS] HTTP Get returned error %v", err.Error())
+		log.Printf("[Azure CNS] HTTP Post returned error %v", err.Error())
 		return err
 	}
 
@@ -225,6 +225,7 @@ func (ic *IpamClient) GetIPAddressUtilization(poolID string) (int, int, []string
 
 	res, err := client.Post(url, "application/json", &body)
 	if err != nil {
+		log.Printf("[Azure CNS] HTTP Post returned error %v", err.Error())
 		return 0, 0, nil, err
 	}
 
