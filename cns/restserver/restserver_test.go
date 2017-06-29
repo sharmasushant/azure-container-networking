@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-container-networking/cns"
-	"github.com/Azure/azure-container-networking/common"
+	"github.com/Azure/azure-container-networking/cns/common"
 )
 
 var service HTTPService
@@ -150,7 +150,7 @@ func TestReserveIPAddress(t *testing.T) {
 	envRequestJSON := new(bytes.Buffer)
 	json.NewEncoder(envRequestJSON).Encode(envRequest)
 
-	req, err := http.NewRequest(http.MethodGet, cns.ReserveIPAddressPath, envRequestJSON)
+	req, err := http.NewRequest(http.MethodPost, cns.ReserveIPAddressPath, envRequestJSON)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -174,7 +174,7 @@ func TestReleaseIPAddress(t *testing.T) {
 	releaseIPAddressRequestJSON := new(bytes.Buffer)
 	json.NewEncoder(releaseIPAddressRequestJSON).Encode(releaseIPRequest)
 
-	req, err := http.NewRequest(http.MethodGet, cns.ReleaseIPAddressPath, releaseIPAddressRequestJSON)
+	req, err := http.NewRequest(http.MethodPost, cns.ReleaseIPAddressPath, releaseIPAddressRequestJSON)
 	if err != nil {
 		t.Fatal(err)
 	}

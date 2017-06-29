@@ -6,6 +6,7 @@ package common
 import (
 	"errors"
 
+	acn "github.com/Azure/azure-container-networking/common"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Azure/azure-container-networking/store"
 )
@@ -31,7 +32,7 @@ type ServiceAPI interface {
 type ServiceConfig struct {
 	Name     string
 	Version  string
-	Listener *Listener
+	Listener *acn.Listener
 	ErrChan  chan error
 	Store    store.KeyValueStore
 }
@@ -60,11 +61,11 @@ func (service *Service) Initialize(config *ServiceConfig) error {
 	}
 
 	log.Debugf("[Azure CNS] Going to initialize the service: %+v with config: %+v.", service, config)
-	
+
 	service.ErrChan = config.ErrChan
 	service.Store = config.Store
 	service.Version = config.Version
-	
+
 	log.Debugf("[Azure CNS] nitialized service: %+v with config: %+v.", service, config)
 
 	return nil
