@@ -6,10 +6,10 @@ package ipamclient
 import (
 	"bytes"
 	"encoding/json"
-
 	"fmt"
 
-	"github.com/Azure/azure-container-networking/ipam"
+	cnmIpam "github.com/Azure/azure-container-networking/cnm/ipam"
+	ipam "github.com/Azure/azure-container-networking/ipam"
 	"github.com/Azure/azure-container-networking/log"
 )
 
@@ -37,7 +37,7 @@ func (ic *IpamClient) GetAddressSpace() (string, error) {
 		return "", err
 	}
 
-	url := ic.connectionURL + getAddressSpacesPath
+	url := ic.connectionURL + cnmIpam.GetAddressSpacesPath
 
 	res, err := client.Post(url, "application/json", nil)
 	if err != nil {
@@ -46,7 +46,7 @@ func (ic *IpamClient) GetAddressSpace() (string, error) {
 	}
 
 	if res.StatusCode == 200 {
-		var resp getAddressSpacesResponse
+		var resp cnmIpam.GetDefaultAddressSpacesResponse
 		err := json.NewDecoder(res.Body).Decode(&resp)
 		if err != nil {
 			log.Printf("[Azure CNS] Error received while parsing GetAddressSpace response resp:%v err:%v", res.Body, err.Error())
@@ -74,9 +74,9 @@ func (ic *IpamClient) GetPoolID(asID, subnet string) (string, error) {
 		return "", err
 	}
 
-	url := ic.connectionURL + requestPoolPath
+	url := ic.connectionURL + cnmIpam.RequestPoolPath
 
-	payload := &requestPoolRequest{
+	payload := &cnmIpam.RequestPoolRequest{
 		AddressSpace: asID,
 		Pool:         subnet,
 	}
@@ -90,7 +90,7 @@ func (ic *IpamClient) GetPoolID(asID, subnet string) (string, error) {
 	}
 
 	if res.StatusCode == 200 {
-		var resp requestPoolResponse
+		var resp cnmIpam.RequestPoolResponse
 		err := json.NewDecoder(res.Body).Decode(&resp)
 		if err != nil {
 			log.Printf("[Azure CNS] Error received while parsing GetPoolID response resp:%v err:%v", res.Body, err.Error())
@@ -120,9 +120,9 @@ func (ic *IpamClient) ReserveIPAddress(poolID string, reservationID string) (str
 		return "", err
 	}
 
-	url := ic.connectionURL + reserveAddrPath
+	url := ic.connectionURL + cnmIpam.RequestAddressPath
 
-	payload := &reserveAddrRequest{
+	payload := &cnmIpam.RequestAddressRequest{
 		PoolID:  poolID,
 		Address: "",
 		Options: make(map[string]string),
@@ -138,7 +138,7 @@ func (ic *IpamClient) ReserveIPAddress(poolID string, reservationID string) (str
 	}
 
 	if res.StatusCode == 200 {
-		var reserveResp reserveAddrResponse
+		var reserveResp cnmIpam.RequestAddressResponse
 
 		err = json.NewDecoder(res.Body).Decode(&reserveResp)
 		if err != nil {
@@ -168,9 +168,9 @@ func (ic *IpamClient) ReleaseIPAddress(poolID string, reservationID string) erro
 		return err
 	}
 
-	url := ic.connectionURL + releaseAddrPath
+	url := ic.connectionURL + cnmIpam.ReleaseAddressPath
 
-	payload := &releaseAddrRequest{
+	payload := &cnmIpam.ReleaseAddressRequest{
 		PoolID:  poolID,
 		Address: "",
 		Options: make(map[string]string),
@@ -187,7 +187,7 @@ func (ic *IpamClient) ReleaseIPAddress(poolID string, reservationID string) erro
 	}
 
 	if res.StatusCode == 200 {
-		var releaseResp releaseAddrResponse
+		var releaseResp cnmIpam.ReleaseAddressResponse
 		err := json.NewDecoder(res.Body).Decode(&releaseResp)
 		if err != nil {
 			log.Printf("[Azure CNS] Error received while parsing release response :%v err:%v", res.Body, err.Error())
@@ -215,9 +215,9 @@ func (ic *IpamClient) GetIPAddressUtilization(poolID string) (int, int, []string
 	if err != nil {
 		return 0, 0, nil, err
 	}
-	url := ic.connectionURL + getPoolInfoPath
+	url := ic.connectionURL + cnmIpam.GetPoolInfoPath
 
-	payload := &getPoolInfoRequest{
+	payload := &cnmIpam.GetPoolInfoRequest{
 		PoolID: poolID,
 	}
 
@@ -230,7 +230,7 @@ func (ic *IpamClient) GetIPAddressUtilization(poolID string) (int, int, []string
 	}
 
 	if res.StatusCode == 200 {
-		var poolInfoResp getPoolInfoResponse
+		var poolInfoResp cnmIpam.GetPoolInfoResponse
 		err := json.NewDecoder(res.Body).Decode(&poolInfoResp)
 		if err != nil {
 			log.Printf("[Azure CNS] Error received while parsing GetIPUtilization response :%v err:%v", res.Body, err.Error())
