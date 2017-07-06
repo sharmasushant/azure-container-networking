@@ -80,6 +80,7 @@ func setEnv(t *testing.T) *httptest.ResponseRecorder {
 	mux.ServeHTTP(w, req)
 	return w
 }
+
 func TestSetEnvironment(t *testing.T) {
 	fmt.Println("Test: SetEnvironment")
 
@@ -202,6 +203,7 @@ func TestReleaseIPAddress(t *testing.T) {
 		fmt.Printf("SetEnvironment Responded with %+v\n", releaseIPAddressResponse)
 	}
 }
+
 func TestGetIPAddressUtilization(t *testing.T) {
 	fmt.Println("Test: GetIPAddressUtilization")
 
