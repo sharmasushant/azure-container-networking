@@ -9,8 +9,9 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/Azure/azure-container-networking/cns/common"
 	"github.com/Azure/azure-container-networking/cns/restserver"
-	"github.com/Azure/azure-container-networking/common"
+	acn "github.com/Azure/azure-container-networking/common"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Azure/azure-container-networking/platform"
 	"github.com/Azure/azure-container-networking/store"
@@ -25,40 +26,40 @@ const (
 var version string
 
 // Command line arguments for CNM plugin.
-var args = common.ArgumentList{
+var args = acn.ArgumentList{
 	{
-		Name:         common.OptAPIServerURL,
-		Shorthand:    common.OptAPIServerURLAlias,
+		Name:         acn.OptAPIServerURL,
+		Shorthand:    acn.OptAPIServerURLAlias,
 		Description:  "Set the API server URL",
 		Type:         "string",
 		DefaultValue: "",
 	},
 	{
-		Name:         common.OptLogLevel,
-		Shorthand:    common.OptLogLevelAlias,
+		Name:         acn.OptLogLevel,
+		Shorthand:    acn.OptLogLevelAlias,
 		Description:  "Set the logging level",
 		Type:         "int",
-		DefaultValue: common.OptLogLevelInfo,
+		DefaultValue: acn.OptLogLevelInfo,
 		ValueMap: map[string]interface{}{
-			common.OptLogLevelInfo:  log.LevelInfo,
-			common.OptLogLevelDebug: log.LevelDebug,
+			acn.OptLogLevelInfo:  log.LevelInfo,
+			acn.OptLogLevelDebug: log.LevelDebug,
 		},
 	},
 	{
-		Name:         common.OptLogTarget,
-		Shorthand:    common.OptLogTargetAlias,
+		Name:         acn.OptLogTarget,
+		Shorthand:    acn.OptLogTargetAlias,
 		Description:  "Set the logging target",
 		Type:         "int",
-		DefaultValue: common.OptLogTargetFile,
+		DefaultValue: acn.OptLogTargetFile,
 		ValueMap: map[string]interface{}{
-			common.OptLogTargetSyslog: log.TargetSyslog,
-			common.OptLogTargetStderr: log.TargetStderr,
-			common.OptLogTargetFile:   log.TargetLogfile,
+			acn.OptLogTargetSyslog: log.TargetSyslog,
+			acn.OptLogTargetStderr: log.TargetStderr,
+			acn.OptLogTargetFile:   log.TargetLogfile,
 		},
 	},
 	{
-		Name:         common.OptVersion,
-		Shorthand:    common.OptVersionAlias,
+		Name:         acn.OptVersion,
+		Shorthand:    acn.OptVersionAlias,
 		Description:  "Print version information",
 		Type:         "bool",
 		DefaultValue: false,
@@ -74,12 +75,12 @@ func printVersion() {
 // Main is the entry point for CNS.
 func main() {
 	// Initialize and parse command line arguments.
-	common.ParseArgs(&args, printVersion)
+	acn.ParseArgs(&args, printVersion)
 
-	url := common.GetArg(common.OptAPIServerURL).(string)
-	logLevel := common.GetArg(common.OptLogLevel).(int)
-	logTarget := common.GetArg(common.OptLogTarget).(int)
-	vers := common.GetArg(common.OptVersion).(bool)
+	url := acn.GetArg(acn.OptAPIServerURL).(string)
+	logLevel := acn.GetArg(acn.OptLogLevel).(int)
+	logTarget := acn.GetArg(acn.OptLogTarget).(int)
+	vers := acn.GetArg(acn.OptVersion).(bool)
 
 	if vers {
 		printVersion()
@@ -122,7 +123,7 @@ func main() {
 	log.Printf("Running on %v", platform.GetOSInfo())
 
 	// Set CNS options.
-	httpRestService.SetOption(common.OptAPIServerURL, url)
+	httpRestService.SetOption(acn.OptAPIServerURL, url)
 
 	// Start CNS.
 	if httpRestService != nil {

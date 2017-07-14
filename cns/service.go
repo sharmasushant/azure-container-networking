@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/Azure/azure-container-networking/common"
+	"github.com/Azure/azure-container-networking/cns/common"
+	acn "github.com/Azure/azure-container-networking/common"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Azure/azure-container-networking/store"
 )
@@ -22,7 +23,7 @@ const (
 type Service struct {
 	*common.Service
 	EndpointType string
-	Listener     *common.Listener
+	Listener     *acn.Listener
 }
 
 // NewService creates a new Service object.
@@ -40,7 +41,7 @@ func NewService(name, version string, store store.KeyValueStore) (*Service, erro
 
 // GetAPIServerURL returns the API server URL.
 func (service *Service) getAPIServerURL() string {
-	urls, _ := service.GetOption(common.OptAPIServerURL).(string)
+	urls, _ := service.GetOption(acn.OptAPIServerURL).(string)
 	if urls == "" {
 		urls = defaultAPIServerURL
 	}
@@ -64,7 +65,7 @@ func (service *Service) Initialize(config *common.ServiceConfig) error {
 		}
 
 		// Create the listener.
-		listener, err := common.NewListener(u)
+		listener, err := acn.NewListener(u)
 		if err != nil {
 			return err
 		}

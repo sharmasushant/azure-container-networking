@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-container-networking/cns"
-	"github.com/Azure/azure-container-networking/common"
+	"github.com/Azure/azure-container-networking/cns/common"
 )
 
 var service HTTPService
@@ -75,14 +75,18 @@ func setEnv(t *testing.T) *httptest.ResponseRecorder {
 	if err != nil {
 		t.Fatal(err)
 	}
+	
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	return w
 }
+
 func TestSetEnvironment(t *testing.T) {
 	fmt.Println("Test: SetEnvironment")
+
 	var resp cns.Response
 	w := setEnv(t)
+
 	err := decodeResponse(w, &resp)
 	if err != nil || resp.ReturnCode != 0 {
 		t.Errorf("SetEnvironment failed with response %+v", resp)
@@ -94,19 +98,24 @@ func TestSetEnvironment(t *testing.T) {
 // Tests CreateNetwork functionality.
 func TestCreateNetwork(t *testing.T) {
 	fmt.Println("Test: CreateNetwork")
+
 	var body bytes.Buffer
 	setEnv(t)
 	info := &cns.CreateNetworkRequest{
 		NetworkName: "azurenet",
 	}
+
 	json.NewEncoder(&body).Encode(info)
+	
 	req, err := http.NewRequest(http.MethodPost, cns.CreateNetworkPath, &body)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	var resp cns.Response
+	
 	err = decodeResponse(w, &resp)
 	if err != nil || resp.ReturnCode != 0 {
 		t.Errorf("CreateNetwork failed with response %+v", resp)
@@ -118,19 +127,24 @@ func TestCreateNetwork(t *testing.T) {
 // Tests DeleteNetwork functionality.
 func TestDeleteNetwork(t *testing.T) {
 	fmt.Println("Test: DeleteNetwork")
+
 	var body bytes.Buffer
 	setEnv(t)
 	info := &cns.DeleteNetworkRequest{
 		NetworkName: "azurenet",
 	}
+
 	json.NewEncoder(&body).Encode(info)
+
 	req, err := http.NewRequest(http.MethodPost, cns.DeleteNetworkPath, &body)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	var resp cns.Response
+
 	err = decodeResponse(w, &resp)
 	if err != nil || resp.ReturnCode != 0 {
 		t.Errorf("DeleteNetwork failed with response %+v", resp)
@@ -145,22 +159,20 @@ func TestReserveIPAddress(t *testing.T) {
 	reserveIPRequest := cns.ReserveIPAddressRequest{ReservationID: "ip01"}
 	reserveIPRequestJSON := new(bytes.Buffer)
 	json.NewEncoder(reserveIPRequestJSON).Encode(reserveIPRequest)
-
 	envRequest := cns.SetEnvironmentRequest{Location: "Azure", NetworkType: "Underlay"}
 	envRequestJSON := new(bytes.Buffer)
 	json.NewEncoder(envRequestJSON).Encode(envRequest)
 
-	req, err := http.NewRequest(http.MethodGet, cns.ReserveIPAddressPath, envRequestJSON)
+	req, err := http.NewRequest(http.MethodPost, cns.ReserveIPAddressPath, envRequestJSON)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-
 	var reserveIPAddressResponse cns.ReserveIPAddressResponse
-	err = decodeResponse(w, &reserveIPAddressResponse)
 
+	err = decodeResponse(w, &reserveIPAddressResponse)
 	if err != nil || reserveIPAddressResponse.Response.ReturnCode != 0 {
 		t.Errorf("SetEnvironment failed with response %+v", reserveIPAddressResponse)
 	} else {
@@ -170,27 +182,28 @@ func TestReserveIPAddress(t *testing.T) {
 
 func TestReleaseIPAddress(t *testing.T) {
 	fmt.Println("Test: ReleaseIPAddress")
+
 	releaseIPRequest := cns.ReleaseIPAddressRequest{ReservationID: "ip01"}
 	releaseIPAddressRequestJSON := new(bytes.Buffer)
 	json.NewEncoder(releaseIPAddressRequestJSON).Encode(releaseIPRequest)
 
-	req, err := http.NewRequest(http.MethodGet, cns.ReleaseIPAddressPath, releaseIPAddressRequestJSON)
+	req, err := http.NewRequest(http.MethodPost, cns.ReleaseIPAddressPath, releaseIPAddressRequestJSON)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-
 	var releaseIPAddressResponse cns.Response
-	err = decodeResponse(w, &releaseIPAddressResponse)
 
+	err = decodeResponse(w, &releaseIPAddressResponse)
 	if err != nil || releaseIPAddressResponse.ReturnCode != 0 {
 		t.Errorf("SetEnvironment failed with response %+v", releaseIPAddressResponse)
 	} else {
 		fmt.Printf("SetEnvironment Responded with %+v\n", releaseIPAddressResponse)
 	}
 }
+
 func TestGetIPAddressUtilization(t *testing.T) {
 	fmt.Println("Test: GetIPAddressUtilization")
 
@@ -198,12 +211,12 @@ func TestGetIPAddressUtilization(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-
 	var iPAddressesUtilizationResponse cns.IPAddressesUtilizationResponse
-	err = decodeResponse(w, &iPAddressesUtilizationResponse)
 
+	err = decodeResponse(w, &iPAddressesUtilizationResponse)
 	if err != nil || iPAddressesUtilizationResponse.Response.ReturnCode != 0 {
 		t.Errorf("GetIPAddressUtilization failed with response %+v", iPAddressesUtilizationResponse)
 	} else {
@@ -213,17 +226,19 @@ func TestGetIPAddressUtilization(t *testing.T) {
 
 func TestGetHostLocalIP(t *testing.T) {
 	fmt.Println("Test: GetHostLocalIP")
+
 	setEnv(t)
+
 	req, err := http.NewRequest(http.MethodGet, cns.GetHostLocalIPPath, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-
 	var hostLocalIPAddressResponse cns.HostLocalIPAddressResponse
-	err = decodeResponse(w, &hostLocalIPAddressResponse)
 
+	err = decodeResponse(w, &hostLocalIPAddressResponse)
 	if err != nil || hostLocalIPAddressResponse.Response.ReturnCode != 0 {
 		t.Errorf("GetHostLocalIP failed with response %+v", hostLocalIPAddressResponse)
 	} else {
@@ -233,16 +248,17 @@ func TestGetHostLocalIP(t *testing.T) {
 
 func TestGetUnhealthyIPAddresses(t *testing.T) {
 	fmt.Println("Test: GetGhostIPAddresses")
+
 	req, err := http.NewRequest(http.MethodGet, cns.GetUnhealthyIPAddressesPath, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-
 	var getIPAddressesResponse cns.GetIPAddressesResponse
-	err = decodeResponse(w, &getIPAddressesResponse)
 
+	err = decodeResponse(w, &getIPAddressesResponse)
 	if err != nil || getIPAddressesResponse.Response.ReturnCode != 0 {
 		t.Errorf("GetUnhealthyIPAddresses failed with response %+v", getIPAddressesResponse)
 	} else {
