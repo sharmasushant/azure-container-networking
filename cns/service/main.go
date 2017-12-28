@@ -132,6 +132,7 @@ func main() {
 			fmt.Printf("Failed to start CNS, err:%v.\n", err)
 			return
 		}
+		httpRestService.RestoreState()
 	}
 
 	// Relay these incoming signals to OS signal channel.

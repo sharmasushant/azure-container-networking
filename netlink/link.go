@@ -143,7 +143,7 @@ func AddLink(link Link) error {
 	return s.sendAndWaitForAck(req)
 }
 
-// DeleteLink deletes a network interface.
+// DeleteLink deletes a network interface if it exists.
 func DeleteLink(name string) error {
 	if name == "" {
 		return fmt.Errorf("Invalid link name")
@@ -155,7 +155,9 @@ func DeleteLink(name string) error {
 	}
 
 	iface, err := net.InterfaceByName(name)
+	
 	if err != nil {
+		if err.Err == 
 		return err
 	}
 

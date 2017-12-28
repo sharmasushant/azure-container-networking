@@ -37,6 +37,8 @@ type httpRestService struct {
 	networkToSubnetMap map[string]string
 	store              store.KeyValueStore
 	state              httpRestServiceState
+
+	sync.Mutex
 }
 
 // httpRestServiceState contains the state we would like to persist.
@@ -731,7 +733,7 @@ func (service *httpRestService) saveState() error {
 }
 
 // restoreState restores CNS state from persistent store.
-func (service *httpRestService) restoreState() error {
+func (service *httpRestService) RestoreState() error {
 	log.Printf("[Azure CNS] restoreState")
 
 	// Skip if a store is not provided.
