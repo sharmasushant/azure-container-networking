@@ -75,7 +75,7 @@ func setEnv(t *testing.T) *httptest.ResponseRecorder {
 	if err != nil {
 		t.Fatal(err)
 	}
-	
+
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	return w
@@ -106,7 +106,7 @@ func TestCreateNetwork(t *testing.T) {
 	}
 
 	json.NewEncoder(&body).Encode(info)
-	
+
 	req, err := http.NewRequest(http.MethodPost, cns.CreateNetworkPath, &body)
 	if err != nil {
 		t.Fatal(err)
@@ -115,7 +115,7 @@ func TestCreateNetwork(t *testing.T) {
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	var resp cns.Response
-	
+
 	err = decodeResponse(w, &resp)
 	if err != nil || resp.ReturnCode != 0 {
 		t.Errorf("CreateNetwork failed with response %+v", resp)
@@ -264,4 +264,69 @@ func TestGetUnhealthyIPAddresses(t *testing.T) {
 	} else {
 		fmt.Printf("GetUnhealthyIPAddresses Responded with %+v\n", getIPAddressesResponse)
 	}
+}
+
+func TestCreateNetworkContainer(t *testing.T) {
+	fmt.Println("Test: TestCreateNetworkContainer")
+
+	var body bytes.Buffer
+	setEnv(t)
+
+	var ipConfig cns.IPConfiguration
+	ipConfig.DNSServers = []string{"8.8.8.8"}
+	ipConfig.GatewayIPAddress = "11.0.0.1"
+	var ipSubnet cns.IPSubnet
+	ipSubnet.IPAddress = "11.0.0.5"
+	ipSubnet.PrefixLength = 24
+	ipConfig.IPSubnet = ipSubnet
+
+	info := &cns.CreateNetworkContainerRequest{
+		Version:              "0.1",
+		NetworkContainerType: "WebApps",
+		NetworkContainerid:   "ethWebApp",
+		IPConfiguration:      ipConfig,
+	}
+
+	json.NewEncoder(&body).Encode(info)
+
+	req, err := http.NewRequest(http.MethodPost, cns.CreateOrUpdateNetworkContainer, &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	var resp cns.Response
+
+	err = decodeResponse(w, &resp)
+	if err != nil || resp.ReturnCode != 0 {
+		t.Errorf("CreateNetworkContainerRequest failed with response %+v Err:%+v", resp, err)
+		return
+	}
+
+	fmt.Printf("CreateNetworkContainerRequest succeeded with response %+v\n", resp)
+
+	fmt.Println("Now testing DeleteNetworkContainer")
+
+	deleteInfo := &cns.DeleteNetworkContainerRequest{
+		NetworkContainerid: "ethWebApp",
+	}
+
+	json.NewEncoder(&body).Encode(deleteInfo)
+
+	req, err = http.NewRequest(http.MethodPost, cns.DeleteNetworkContainer, &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w = httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	err = decodeResponse(w, &resp)
+	if err != nil || resp.ReturnCode != 0 {
+		t.Errorf("DeleteNetworkContainer failed with response %+v Err:%+v", resp, err)
+	} else {
+		fmt.Printf("DeleteNetworkContainer succeded with response %+v\n", resp)
+	}
+
 }
