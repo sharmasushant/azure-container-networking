@@ -17,5 +17,7 @@ const (
 	NotFound                     = 14
 	AddressUnavailable           = 15
 	NetworkContainerNotSpecified = 16
+	CallToHostFailed             = 17
+	UnknownContainerID           = 18
 	UnexpectedError              = 99
 )

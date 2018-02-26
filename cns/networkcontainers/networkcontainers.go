@@ -26,24 +26,6 @@ type NetworkContainers struct {
 }
 
 func interfaceExists(iFaceName string) (bool, error) {
-
-	interfaces, _ := net.Interfaces()
-	for _, iface := range interfaces {
-		log.Printf("\n\n*******\nInterface description\n%+v\n", iface)
-		log.Printf("%v\n", iface.Flags)
-		addrs, _ := iface.Addrs()
-		for _, addr := range addrs {
-			log.Printf("%v\n", addr)
-		}
-		log.Printf("\n\n")
-
-	}
-	/*
-		ift, _ := interfaceTable(0)
-		for _, ifi := range ift {
-			log.Printf("\n*******\nInterface description from Table\n%+v\n\n", ifi)
-		}
-	*/
 	_, err := net.InterfaceByName(iFaceName)
 
 	if err != nil {
@@ -73,8 +55,8 @@ func (cn *NetworkContainers) Update(createNetworkContainerRequest cns.CreateNetw
 
 // Delete deletes a network container.
 func (cn *NetworkContainers) Delete(networkContainerID string) error {
-	log.Printf("[Azure CNS] NetworkContainers.Update called")
+	log.Printf("[Azure CNS] NetworkContainers.Delete called")
 	err := deleteInterface(networkContainerID)
-	log.Printf("[Azure CNS] NetworkContainers.Update finished.")
+	log.Printf("[Azure CNS] NetworkContainers.Delete finished.")
 	return err
 }

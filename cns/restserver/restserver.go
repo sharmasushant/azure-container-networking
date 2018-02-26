@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/Azure/azure-container-networking/cns"
@@ -22,7 +23,8 @@ import (
 
 const (
 	// Key against which CNS state is persisted.
-	storeKey = "ContainerNetworkService"
+	storeKey        = "ContainerNetworkService"
+	swiftAPIVersion = "1"
 )
 
 // httpRestService represents http listener for CNS - Container Networking Service.
@@ -35,14 +37,24 @@ type httpRestService struct {
 	routingTable     *routes.RoutingTable
 	store            store.KeyValueStore
 	state            httpRestServiceState
+	lock             sync.Mutex
+}
+
+// containerstatus is used to save status of an existing container
+type containerstatus struct {
+	ID                            string
+	VMVersion                     string
+	HostVersion                   string
+	CreateNetworkContainerRequest cns.CreateNetworkContainerRequest
 }
 
 // httpRestServiceState contains the state we would like to persist.
 type httpRestServiceState struct {
-	Location    string
-	NetworkType string
-	Initialized bool
-	TimeStamp   time.Time
+	Location        string
+	NetworkType     string
+	Initialized     bool
+	ContainerStatus map[string]containerstatus
+	TimeStamp       time.Time
 }
 
 // HTTPService describes the min API interface that every service should have.
@@ -104,6 +116,7 @@ func (service *httpRestService) Start(config *common.ServiceConfig) error {
 	listener.AddHandler(cns.GetUnhealthyIPAddressesPath, service.getUnhealthyIPAddresses)
 	listener.AddHandler(cns.CreateOrUpdateNetworkContainer, service.createOrUpdateNetworkContainer)
 	listener.AddHandler(cns.DeleteNetworkContainer, service.deleteNetworkContainer)
+	listener.AddHandler(cns.GetNetworkContainerStatus, service.getNetworkContainerStatus)
 
 	// handlers for v0.2
 	listener.AddHandler(cns.V2Prefix+cns.SetEnvironmentPath, service.setEnvironment)
@@ -766,6 +779,24 @@ func (service *httpRestService) createOrUpdateNetworkContainer(w http.ResponseWr
 			break
 		}
 
+		// we don't want to overwrite what other calls may have written
+		service.lock.Lock()
+		defer service.lock.Unlock()
+
+		existing, ok := service.state.ContainerStatus[req.NetworkContainerid]
+		var hostVersion string
+		if ok {
+			hostVersion = existing.HostVersion
+		}
+
+		service.state.ContainerStatus[req.NetworkContainerid] =
+			containerstatus{
+				ID:                            req.NetworkContainerid,
+				VMVersion:                     req.Version,
+				CreateNetworkContainerRequest: req,
+				HostVersion:                   hostVersion}
+		service.saveState()
+
 	default:
 		returnMessage = "[Azure CNS] Error. CreateOrUpdateNetworkContainer did not receive a POST."
 		returnCode = InvalidParameter
@@ -839,8 +870,12 @@ func (service *httpRestService) deleteNetworkContainer(w http.ResponseWriter, r 
 			returnMessage = fmt.Sprintf("[Azure CNS] Error. DeleteNetworkContainer failed %v", err.Error())
 			returnCode = UnexpectedError
 			break
+		} else {
+			service.lock.Lock()
+			delete(service.state.ContainerStatus, req.NetworkContainerid)
+			service.lock.Unlock()
 		}
-
+		break
 	default:
 		returnMessage = "[Azure CNS] Error. DeleteNetworkContainer did not receive a POST."
 		returnCode = InvalidParameter
@@ -860,18 +895,43 @@ func (service *httpRestService) deleteNetworkContainer(w http.ResponseWriter, r 
 }
 
 func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter, r *http.Request) {
-	log.Printf("[Azure CNS] deleteNetworkContainer")
+	log.Printf("[Azure CNS] getNetworkContainerStatus")
 
 	var req cns.GetNetworkContainerStatusRequest
-
 	returnMessage := ""
 	returnCode := 0
 	err := service.Listener.Decode(w, r, &req)
-
 	log.Request(service.Name, &req, err)
 
 	if err != nil {
 		return
+	}
+
+	service.lock.Lock()
+	defer service.lock.Unlock()
+
+	containerInfo := service.state.ContainerStatus
+	containerDetails, ok := containerInfo[req.NetworkContainerid]
+	var hostVersion string
+	var vmVersion string
+
+	if ok {
+		savedReq := containerDetails.CreateNetworkContainerRequest
+		containerVersion, err := service.imdsClient.GetNetworkContainerInfoFromHost(
+			req.NetworkContainerid,
+			savedReq.PrimaryInterfaceIdentifier,
+			savedReq.NetworkContainerid,
+			savedReq.AutherizationToken, swiftAPIVersion)
+
+		if err != nil {
+			returnCode = CallToHostFailed
+			returnMessage = err.Error()
+		} else {
+			hostVersion = containerVersion.ProgrammedVersion
+		}
+	} else {
+		returnMessage = "[Azure CNS] Never received call to create this container."
+		returnCode = UnknownContainerID
 	}
 
 	resp := cns.Response{
@@ -879,9 +939,15 @@ func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter,
 		Message:    returnMessage,
 	}
 
-	reserveResp := &cns.GetNetworkContainerStatusResponse{Response: resp}
-	err = service.Listener.Encode(w, &reserveResp)
+	networkContainerStatusReponse := cns.GetNetworkContainerStatusResponse{
+		Response:           resp,
+		NetworkContainerid: req.NetworkContainerid,
+		AzureHostVersion:   hostVersion,
+		Version:            vmVersion,
+	}
 
-	log.Response(service.Name, reserveResp, err)
+	err = service.Listener.Encode(w, &networkContainerStatusReponse)
+
+	log.Response(service.Name, networkContainerStatusReponse, err)
 
 }

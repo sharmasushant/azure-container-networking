@@ -14,6 +14,8 @@ const (
 	// API server URL.
 	OptAPIServerURL      = "api-url"
 	OptAPIServerURLAlias = "u"
+	OptCnsURL            = "cns-url"
+	OptCnsURLAlias       = "c"
 
 	// Logging level.
 	OptLogLevel      = "log-level"

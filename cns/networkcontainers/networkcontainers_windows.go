@@ -61,7 +61,8 @@ func createOrUpdateWithOperation(createNetworkContainerRequest cns.CreateNetwork
 		"/gateway",
 		createNetworkContainerRequest.IPConfiguration.GatewayIPAddress,
 		"/dns",
-		dnsServers}
+		dnsServers,
+		"/weakhostsend true /weakhostreceive true"}
 
 	log.Printf("[Azure CNS] Going to create/update network loopback adapter: %v", args)
 	c := exec.Command("cmd", args...)

@@ -118,6 +118,7 @@ type CreateNetworkContainerRequest struct {
 	NetworkContainerType       string
 	NetworkContainerid         string // Mandatory input.
 	PrimaryInterfaceIdentifier string // Optional. Primary CA.
+	AutherizationToken         string
 	IPConfiguration            IPConfiguration
 	MultiTenancyInfo           MultiTenancyInfo
 	VnetAddressSpace           []IPSubnet // To setup SNAT (should include service endpoint vips).
@@ -163,7 +164,6 @@ type GetNetworkContainerStatusRequest struct {
 // GetNetworkContainerStatusResponse specifies response of retriving a network container status.
 type GetNetworkContainerStatusResponse struct {
 	NetworkContainerid string
-	Status             string
 	Version            string
 	AzureHostVersion   string
 	Response           Response
