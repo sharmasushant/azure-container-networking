@@ -117,6 +117,7 @@ func (service *httpRestService) Start(config *common.ServiceConfig) error {
 	listener.AddHandler(cns.CreateOrUpdateNetworkContainer, service.createOrUpdateNetworkContainer)
 	listener.AddHandler(cns.DeleteNetworkContainer, service.deleteNetworkContainer)
 	listener.AddHandler(cns.GetNetworkContainerStatus, service.getNetworkContainerStatus)
+	listener.AddHandler(cns.GetInterfaceForContainer, service.getInterfaceForContainer)
 
 	// handlers for v0.2
 	listener.AddHandler(cns.V2Prefix+cns.SetEnvironmentPath, service.setEnvironment)
@@ -128,9 +129,9 @@ func (service *httpRestService) Start(config *common.ServiceConfig) error {
 	listener.AddHandler(cns.V2Prefix+cns.GetIPAddressUtilizationPath, service.getIPAddressUtilization)
 	listener.AddHandler(cns.V2Prefix+cns.GetUnhealthyIPAddressesPath, service.getUnhealthyIPAddresses)
 	listener.AddHandler(cns.V2Prefix+cns.CreateOrUpdateNetworkContainer, service.createOrUpdateNetworkContainer)
-	listener.AddHandler(cns.V2Prefix+cns.GetNetworkContainer, service.getNetworkContainer)
 	listener.AddHandler(cns.V2Prefix+cns.DeleteNetworkContainer, service.deleteNetworkContainer)
 	listener.AddHandler(cns.V2Prefix+cns.GetNetworkContainerStatus, service.getNetworkContainerStatus)
+	listener.AddHandler(cns.V2Prefix+cns.GetInterfaceForContainer, service.getInterfaceForContainer)
 
 	log.Printf("[Azure CNS]  Listening.")
 	return nil
@@ -950,4 +951,45 @@ func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter,
 
 	log.Response(service.Name, networkContainerStatusReponse, err)
 
+}
+
+func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[Azure CNS] getInterfaceForContainer")
+
+	var req cns.GetInterfaceForContainerRequest
+	returnMessage := ""
+	returnCode := 0
+	err := service.Listener.Decode(w, r, &req)
+	log.Request(service.Name, &req, err)
+
+	if err != nil {
+		return
+	}
+
+	containerInfo := service.state.ContainerStatus
+	containerDetails, ok := containerInfo[req.NetworkContainerid]
+	var interfaceName string
+
+	if ok {
+		savedReq := containerDetails.CreateNetworkContainerRequest
+		interfaceName = savedReq.NetworkContainerid
+	} else {
+		returnMessage = "[Azure CNS] Never received call to create this container."
+		returnCode = UnknownContainerID
+		interfaceName = ""
+	}
+
+	resp := cns.Response{
+		ReturnCode: returnCode,
+		Message:    returnMessage,
+	}
+
+	getInterfaceForContainerResponse := cns.GetInterfaceForContainerResponse{
+		Response:         resp,
+		NetworkInterface: cns.NetworkInterface{Name: interfaceName},
+	}
+
+	err = service.Listener.Encode(w, &getInterfaceForContainerResponse)
+
+	log.Response(service.Name, getInterfaceForContainerResponse, err)
 }

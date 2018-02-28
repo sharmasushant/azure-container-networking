@@ -17,12 +17,14 @@ import (
 func (imdsClient *ImdsClient) GetNetworkContainerInfoFromHost(hostQueryURLForContainerStatus string, primaryAddress string, networkContainerID string, authToken string, apiVersion string) (*ContainerVersion, error) {
 	log.Printf("[Azure CNS] GetNetworkContainerInfoFromHost")
 	queryURL := fmt.Sprintf(hostQueryURLForContainerStatus, primaryAddress, networkContainerID, authToken, apiVersion)
+
+	log.Printf("[Azure CNS] Going to query Azure Host for container version @ %v", queryURL)
 	jsonResponse, err := http.Get(queryURL)
 	if err != nil {
 		return nil, err
 	}
 
-	log.Printf("[Azure CNS] Response received from NMAgent for NetworkManagement/interfaces: %v", jsonResponse.Body)
+	log.Printf("[Azure CNS] Response received from Azure Host for NetworkManagement/interfaces: %v", jsonResponse.Body)
 
 	var response containerVersionJsonResponse
 	err = json.NewDecoder(jsonResponse.Body).Decode(&response)

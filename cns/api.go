@@ -17,10 +17,9 @@ const (
 	V1Prefix                       = "/v0.1"
 	V2Prefix                       = "/v0.2"
 	CreateOrUpdateNetworkContainer = "/network/createorupdatenetworkcontainer"
-	GetNetworkContainerStatus      = "/network/getnetworkcontainerstatus"
-	GetNetworkContainer            = "/network/getnetworkcontainers"       // id, version, status
-	GetNetworkContainerDetails     = "/network/getnetworkcontainerdetails" // CreateNetworkContainerRequest plus GetNetworkContainerStatusResponse
 	DeleteNetworkContainer         = "/network/deletenetworkcontainer"
+	GetNetworkContainerStatus      = "/network/getnetworkcontainerstatus"
+	GetInterfaceForContainer       = "/network/getinterfaceforcontainer"
 )
 
 // SetEnvironmentRequest describes the Request to set the environment in CNS.
@@ -186,4 +185,20 @@ type DeleteNetworkContainerRequest struct {
 // DeleteNetworkContainerResponse describes the response to delete a specifc network container.
 type DeleteNetworkContainerResponse struct {
 	Response Response
+}
+
+// GetInterfaceForContainerRequest specifies the container ID for which interface needs to be identified.
+type GetInterfaceForContainerRequest struct {
+	NetworkContainerid string
+}
+
+// GetInterfaceForContainerResponse specifies the interface for a given container ID.
+type GetInterfaceForContainerResponse struct {
+	NetworkInterface NetworkInterface
+	Response         Response
+}
+
+// NetworkInterface specifies the information that can be used to unquely identify an interface.
+type NetworkInterface struct {
+	Name string
 }
