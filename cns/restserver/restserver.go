@@ -967,12 +967,14 @@ func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, 
 	}
 
 	containerInfo := service.state.ContainerStatus
-	containerDetails, ok := containerInfo[req.NetworkContainerid]
+	containerDetails, ok := containerInfo[req.NetworkContainerID]
 	var interfaceName string
+	var vnetSpace []cns.IPSubnet
 
 	if ok {
 		savedReq := containerDetails.CreateNetworkContainerRequest
 		interfaceName = savedReq.NetworkContainerid
+		vnetSpace = savedReq.VnetAddressSpace
 	} else {
 		returnMessage = "[Azure CNS] Never received call to create this container."
 		returnCode = UnknownContainerID
@@ -987,6 +989,7 @@ func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, 
 	getInterfaceForContainerResponse := cns.GetInterfaceForContainerResponse{
 		Response:         resp,
 		NetworkInterface: cns.NetworkInterface{Name: interfaceName},
+		VnetAddressSpace: vnetSpace,
 	}
 
 	err = service.Listener.Encode(w, &getInterfaceForContainerResponse)

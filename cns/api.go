@@ -189,12 +189,13 @@ type DeleteNetworkContainerResponse struct {
 
 // GetInterfaceForContainerRequest specifies the container ID for which interface needs to be identified.
 type GetInterfaceForContainerRequest struct {
-	NetworkContainerid string
+	NetworkContainerID string
 }
 
 // GetInterfaceForContainerResponse specifies the interface for a given container ID.
 type GetInterfaceForContainerResponse struct {
 	NetworkInterface NetworkInterface
+	VnetAddressSpace []IPSubnet
 	Response         Response
 }
 
