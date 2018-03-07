@@ -201,5 +201,6 @@ type GetInterfaceForContainerResponse struct {
 
 // NetworkInterface specifies the information that can be used to unquely identify an interface.
 type NetworkInterface struct {
-	Name string
+	Name      string
+	IPAddress string
 }

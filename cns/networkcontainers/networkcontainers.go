@@ -41,6 +41,9 @@ func interfaceExists(iFaceName string) (bool, error) {
 func (cn *NetworkContainers) Create(createNetworkContainerRequest cns.CreateNetworkContainerRequest) error {
 	log.Printf("[Azure CNS] NetworkContainers.Create called")
 	err := createOrUpdateInterface(createNetworkContainerRequest)
+	if err == nil {
+		err = setWeakHostOnInterface(createNetworkContainerRequest.PrimaryInterfaceIdentifier)
+	}
 	log.Printf("[Azure CNS] NetworkContainers.Create finished.")
 	return err
 }
@@ -49,6 +52,9 @@ func (cn *NetworkContainers) Create(createNetworkContainerRequest cns.CreateNetw
 func (cn *NetworkContainers) Update(createNetworkContainerRequest cns.CreateNetworkContainerRequest) error {
 	log.Printf("[Azure CNS] NetworkContainers.Update called")
 	err := createOrUpdateInterface(createNetworkContainerRequest)
+	if err == nil {
+		err = setWeakHostOnInterface(createNetworkContainerRequest.PrimaryInterfaceIdentifier)
+	}
 	log.Printf("[Azure CNS] NetworkContainers.Update finished.")
 	return err
 }

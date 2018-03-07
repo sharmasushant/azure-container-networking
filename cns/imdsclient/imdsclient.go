@@ -14,11 +14,12 @@ import (
 )
 
 // GetNetworkContainerInfoFromHost retrieves the programmed version of network container from Host.
-func (imdsClient *ImdsClient) GetNetworkContainerInfoFromHost(hostQueryURLForContainerStatus string, primaryAddress string, networkContainerID string, authToken string, apiVersion string) (*ContainerVersion, error) {
+func (imdsClient *ImdsClient) GetNetworkContainerInfoFromHost(networkContainerID string, primaryAddress string, authToken string, apiVersion string) (*ContainerVersion, error) {
 	log.Printf("[Azure CNS] GetNetworkContainerInfoFromHost")
-	queryURL := fmt.Sprintf(hostQueryURLForContainerStatus, primaryAddress, networkContainerID, authToken, apiVersion)
+	queryURL := fmt.Sprintf("http://169.254.169.254/machine/plugins/?comp=nmagent&type=NetworkManagement/interfaces/%s/networkContainers/%s/authenticationToken/%s/api-version/%s",
+		primaryAddress, networkContainerID, authToken, apiVersion)
 
-	log.Printf("[Azure CNS] Going to query Azure Host for container version @ %v", queryURL)
+	log.Printf("[Azure CNS] Going to query Azure Host for container version @\n %v\n", queryURL)
 	jsonResponse, err := http.Get(queryURL)
 	if err != nil {
 		return nil, err

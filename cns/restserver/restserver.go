@@ -790,6 +790,10 @@ func (service *httpRestService) createOrUpdateNetworkContainer(w http.ResponseWr
 			hostVersion = existing.HostVersion
 		}
 
+		if service.state.ContainerStatus == nil {
+			service.state.ContainerStatus = make(map[string]containerstatus)
+		}
+
 		service.state.ContainerStatus[req.NetworkContainerid] =
 			containerstatus{
 				ID:                            req.NetworkContainerid,
@@ -873,7 +877,9 @@ func (service *httpRestService) deleteNetworkContainer(w http.ResponseWriter, r 
 			break
 		} else {
 			service.lock.Lock()
-			delete(service.state.ContainerStatus, req.NetworkContainerid)
+			if service.state.ContainerStatus != nil {
+				delete(service.state.ContainerStatus, req.NetworkContainerid)
+			}
 			service.lock.Unlock()
 		}
 		break
@@ -910,9 +916,16 @@ func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter,
 
 	service.lock.Lock()
 	defer service.lock.Unlock()
+	var ok bool
+	var containerDetails containerstatus
 
 	containerInfo := service.state.ContainerStatus
-	containerDetails, ok := containerInfo[req.NetworkContainerid]
+	if containerInfo != nil {
+		containerDetails, ok = containerInfo[req.NetworkContainerid]
+	} else {
+		ok = false
+	}
+
 	var hostVersion string
 	var vmVersion string
 
@@ -921,7 +934,6 @@ func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter,
 		containerVersion, err := service.imdsClient.GetNetworkContainerInfoFromHost(
 			req.NetworkContainerid,
 			savedReq.PrimaryInterfaceIdentifier,
-			savedReq.NetworkContainerid,
 			savedReq.AutherizationToken, swiftAPIVersion)
 
 		if err != nil {
@@ -950,7 +962,6 @@ func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter,
 	err = service.Listener.Encode(w, &networkContainerStatusReponse)
 
 	log.Response(service.Name, networkContainerStatusReponse, err)
-
 }
 
 func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, r *http.Request) {
@@ -969,16 +980,19 @@ func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, 
 	containerInfo := service.state.ContainerStatus
 	containerDetails, ok := containerInfo[req.NetworkContainerID]
 	var interfaceName string
+	var ipaddress string
 	var vnetSpace []cns.IPSubnet
 
 	if ok {
 		savedReq := containerDetails.CreateNetworkContainerRequest
 		interfaceName = savedReq.NetworkContainerid
 		vnetSpace = savedReq.VnetAddressSpace
+		ipaddress = savedReq.IPConfiguration.IPSubnet.IPAddress // it has to exist
 	} else {
 		returnMessage = "[Azure CNS] Never received call to create this container."
 		returnCode = UnknownContainerID
 		interfaceName = ""
+		ipaddress = ""
 	}
 
 	resp := cns.Response{
@@ -988,7 +1002,7 @@ func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, 
 
 	getInterfaceForContainerResponse := cns.GetInterfaceForContainerResponse{
 		Response:         resp,
-		NetworkInterface: cns.NetworkInterface{Name: interfaceName},
+		NetworkInterface: cns.NetworkInterface{Name: interfaceName, IPAddress: ipaddress},
 		VnetAddressSpace: vnetSpace,
 	}
 

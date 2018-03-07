@@ -59,7 +59,7 @@ func decodeResponse(w *httptest.ResponseRecorder, response interface{}) error {
 		return fmt.Errorf("Request failed with HTTP error %d", w.Code)
 	}
 
-	if w.Body == nil {
+	if w.Result().Body == nil {
 		return fmt.Errorf("Response body is empty")
 	}
 
@@ -269,7 +269,7 @@ func TestGetUnhealthyIPAddresses(t *testing.T) {
 func creatOrUpdateWebAppContainerWithName(t *testing.T, name string, ip string) error {
 	var body bytes.Buffer
 	var ipConfig cns.IPConfiguration
-	ipConfig.DNSServers = []string{"8.8.8.8"}
+	ipConfig.DNSServers = []string{"8.8.8.8", "8.8.4.4"}
 	ipConfig.GatewayIPAddress = "11.0.0.1"
 	var ipSubnet cns.IPSubnet
 	ipSubnet.IPAddress = ip
@@ -277,10 +277,11 @@ func creatOrUpdateWebAppContainerWithName(t *testing.T, name string, ip string) 
 	ipConfig.IPSubnet = ipSubnet
 
 	info := &cns.CreateNetworkContainerRequest{
-		Version:              "0.1",
-		NetworkContainerType: "WebApps",
-		NetworkContainerid:   name,
-		IPConfiguration:      ipConfig,
+		Version:                    "0.1",
+		NetworkContainerType:       "WebApps",
+		NetworkContainerid:         name,
+		IPConfiguration:            ipConfig,
+		PrimaryInterfaceIdentifier: "11.0.0.7",
 	}
 
 	json.NewEncoder(&body).Encode(info)
@@ -293,11 +294,14 @@ func creatOrUpdateWebAppContainerWithName(t *testing.T, name string, ip string) 
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 	var resp cns.Response
-
 	err = decodeResponse(w, &resp)
+	fmt.Printf("Raw response: %+v", w.Body)
+
 	if err != nil || resp.ReturnCode != 0 {
 		t.Errorf("CreateNetworkContainerRequest failed with response %+v Err:%+v", resp, err)
 		t.Fatal(err)
+	} else {
+		fmt.Printf("CreateNetworkContainerRequest passed with response %+v Err:%+v", resp, err)
 	}
 
 	fmt.Printf("CreateNetworkContainerRequest succeeded with response %+v\n", resp)
@@ -331,6 +335,60 @@ func deleteNetworkAdapterWithName(t *testing.T, name string) error {
 	return nil
 }
 
+func getNetworkCotnainerStatus(t *testing.T, name string) error {
+	var body bytes.Buffer
+	var resp cns.Response
+
+	getReq := &cns.GetNetworkContainerStatusRequest{
+		NetworkContainerid: "ethWebApp",
+	}
+
+	json.NewEncoder(&body).Encode(getReq)
+	req, err := http.NewRequest(http.MethodPost, cns.GetNetworkContainerStatus, &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	err = decodeResponse(w, &resp)
+	if err != nil || resp.ReturnCode != 0 {
+		t.Errorf("GetNetworkContainerStatus failed with response %+v Err:%+v", resp, err)
+		t.Fatal(err)
+	}
+
+	fmt.Printf("**GetNetworkContainerStatus succeded with response %+v, raw:%+v\n", resp, w.Body)
+	return nil
+}
+
+func getInterfaceForContainer(t *testing.T, name string) error {
+	var body bytes.Buffer
+	var resp cns.Response
+
+	getReq := &cns.GetInterfaceForContainerRequest{
+		NetworkContainerID: "ethWebApp",
+	}
+
+	json.NewEncoder(&body).Encode(getReq)
+	req, err := http.NewRequest(http.MethodPost, cns.GetInterfaceForContainer, &body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	err = decodeResponse(w, &resp)
+	if err != nil || resp.ReturnCode != 0 {
+		t.Errorf("GetInterfaceForContainer failed with response %+v Err:%+v", resp, err)
+		t.Fatal(err)
+	}
+
+	fmt.Printf("**GetInterfaceForContainer succeded with response %+v, raw:%+v\n", resp, w.Body)
+	return nil
+}
+
 func TestCreateNetworkContainer(t *testing.T) {
 	// requires more than 30 seconds to run
 	fmt.Println("Test: TestCreateNetworkContainer")
@@ -347,12 +405,63 @@ func TestCreateNetworkContainer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fmt.Println("Now testing DeleteNetworkContainer")
+	fmt.Println("Now calling DeleteNetworkContainer")
 
 	err = deleteNetworkAdapterWithName(t, "ethWebApp")
 	if err != nil {
 		t.Errorf("Deleting interface failed Err:%+v", err)
 		t.Fatal(err)
 	}
+}
 
+func TestGetNetworkContainerStatus(t *testing.T) {
+	// requires more than 30 seconds to run
+	fmt.Println("Test: TestCreateNetworkContainer")
+	setEnv(t)
+	err := creatOrUpdateWebAppContainerWithName(t, "ethWebApp", "11.0.0.5")
+	if err != nil {
+		t.Errorf("creatOrUpdateWebAppContainerWithName failed Err:%+v", err)
+		t.Fatal(err)
+	}
+
+	fmt.Println("Now calling getNetworkCotnainerStatus")
+	err = getNetworkCotnainerStatus(t, "ethWebApp")
+	if err != nil {
+		t.Errorf("getNetworkCotnainerStatus failed Err:%+v", err)
+		t.Fatal(err)
+	}
+
+	fmt.Println("Now calling DeleteNetworkContainer")
+
+	err = deleteNetworkAdapterWithName(t, "ethWebApp")
+	if err != nil {
+		t.Errorf("Deleting interface failed Err:%+v", err)
+		t.Fatal(err)
+	}
+}
+
+func TestGetInterfaceForNetworkContainer(t *testing.T) {
+	// requires more than 30 seconds to run
+	fmt.Println("Test: TestCreateNetworkContainer")
+	setEnv(t)
+	err := creatOrUpdateWebAppContainerWithName(t, "ethWebApp", "11.0.0.5")
+	if err != nil {
+		t.Errorf("creatOrUpdateWebAppContainerWithName failed Err:%+v", err)
+		t.Fatal(err)
+	}
+
+	fmt.Println("Now calling getInterfaceForContainer")
+	err = getInterfaceForContainer(t, "ethWebApp")
+	if err != nil {
+		t.Errorf("getInterfaceForContainer failed Err:%+v", err)
+		t.Fatal(err)
+	}
+
+	fmt.Println("Now calling DeleteNetworkContainer")
+
+	err = deleteNetworkAdapterWithName(t, "ethWebApp")
+	if err != nil {
+		t.Errorf("Deleting interface failed Err:%+v", err)
+		t.Fatal(err)
+	}
 }
