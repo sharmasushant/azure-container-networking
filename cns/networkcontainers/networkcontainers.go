@@ -12,14 +12,6 @@ import (
 	"github.com/Azure/azure-container-networking/log"
 )
 
-const (
-	// AzureWebApps type will be used to setup network containers for webapps.
-	AzureWebApps = "AzureWebApps"
-
-	// ACI type will be used to setup network containers for ACI.
-	ACI = "ACI"
-)
-
 // NetworkContainers can be used to perform operations on network containers.
 type NetworkContainers struct {
 	logpath string
