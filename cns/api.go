@@ -117,7 +117,7 @@ type CreateNetworkContainerRequest struct {
 	NetworkContainerType       string
 	NetworkContainerid         string // Mandatory input.
 	PrimaryInterfaceIdentifier string // Primary CA.
-	AutherizationToken         string
+	AuthorizationToken         string
 	IPConfiguration            IPConfiguration
 	MultiTenancyInfo           MultiTenancyInfo
 	VnetAddressSpace           []IPSubnet // To setup SNAT (should include service endpoint vips).
