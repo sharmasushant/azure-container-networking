@@ -9,6 +9,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/Azure/azure-container-networking/cns"
@@ -51,10 +52,12 @@ func setWeakHostOnInterface(ipAddress string) error {
 		}
 	}
 
+	ethIndexString := strconv.Itoa(targetIface.Index)
+	log.Printf("[Azure CNS] Going to setup weak host routing for interface with index[%v, %v]\n", targetIface.Index, ethIndexString)
 	if found {
 		args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", "./",
-			"/name",
-			targetIface.Name,
+			"/index",
+			ethIndexString,
 			"/operation",
 			"WEAKHOSTROUTING",
 			"/weakhostsend",

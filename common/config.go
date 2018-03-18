@@ -30,6 +30,10 @@ const (
 	OptLogTargetStderr = "stderr"
 	OptLogTargetFile   = "logfile"
 
+	// Logging location
+	OptLogLocation      = "log-location"
+	OptLogLocationAlias = "o"
+
 	// IPAM query URL.
 	OptIpamQueryUrl      = "ipam-query-url"
 	OptIpamQueryUrlAlias = "q"

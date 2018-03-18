@@ -116,7 +116,7 @@ type CreateNetworkContainerRequest struct {
 	Version                    string
 	NetworkContainerType       string
 	NetworkContainerid         string // Mandatory input.
-	PrimaryInterfaceIdentifier string // Optional. Primary CA.
+	PrimaryInterfaceIdentifier string // Primary CA.
 	AutherizationToken         string
 	IPConfiguration            IPConfiguration
 	MultiTenancyInfo           MultiTenancyInfo

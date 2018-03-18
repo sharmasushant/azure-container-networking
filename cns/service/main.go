@@ -73,6 +73,13 @@ var args = acn.ArgumentList{
 		},
 	},
 	{
+		Name:         acn.OptLogLocation,
+		Shorthand:    acn.OptLogLocationAlias,
+		Description:  "Set the directory location where logs will be saved",
+		Type:         "string",
+		DefaultValue: "",
+	},
+	{
 		Name:         acn.OptIpamQueryInterval,
 		Shorthand:    acn.OptIpamQueryIntervalAlias,
 		Description:  "Set the IPAM plugin query interval",

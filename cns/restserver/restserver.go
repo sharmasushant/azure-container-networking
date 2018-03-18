@@ -118,13 +118,13 @@ func (service *httpRestService) Start(config *common.ServiceConfig) error {
 
 	err = service.restoreState()
 	if err != nil {
-		log.Printf("[Azure CNS]  Failed to restore state, err:%v.", err)
+		log.Printf("[Azure CNS]  Failed to restore service state, err:%v.", err)
 		return err
 	}
 
 	err = service.restoreNetworkState()
 	if err != nil {
-		log.Printf("[Azure CNS]  Failed to restore state, err:%v.", err)
+		log.Printf("[Azure CNS]  Failed to restore network state, err:%v.", err)
 		return err
 	}
 
@@ -238,7 +238,7 @@ func (service *httpRestService) createNetwork(w http.ResponseWriter, r *http.Req
 
 							nicInfo, err := service.imdsClient.GetPrimaryInterfaceInfoFromHost()
 							if err != nil {
-								returnMessage = fmt.Sprintf("[Azure CNS] Error. CreateNetwork failed %v.", err.Error())
+								returnMessage = fmt.Sprintf("[Azure CNS] Error. GetPrimaryInterfaceInfoFromHost failed %v.", err.Error())
 								returnCode = UnexpectedError
 								break
 							}
@@ -1064,9 +1064,14 @@ func (service *httpRestService) getInterfaceForContainer(w http.ResponseWriter, 
 func (service *httpRestService) restoreNetworkState() error {
 	log.Printf("[Azure CNS] Enter Restoring Network State")
 
-	rebooted := false
+	if service.store == nil {
+		log.Printf("[Azure CNS] Store is not initialized, nothing to restore for network state.")
+		return nil
+	}
 
+	rebooted := false
 	modTime, err := service.store.GetModificationTime()
+
 	if err == nil {
 		log.Printf("[Azure CNS] Store timestamp is %v.", modTime)
 
