@@ -73,10 +73,24 @@ var args = acn.ArgumentList{
 		},
 	},
 	{
+		Name:         acn.OptLogLocation,
+		Shorthand:    acn.OptLogLocationAlias,
+		Description:  "Set the directory location where logs will be saved",
+		Type:         "string",
+		DefaultValue: "",
+	},
+	{
 		Name:         acn.OptIpamQueryInterval,
 		Shorthand:    acn.OptIpamQueryIntervalAlias,
 		Description:  "Set the IPAM plugin query interval",
 		Type:         "int",
+		DefaultValue: "",
+	},
+	{
+		Name:         acn.OptCnsURL,
+		Shorthand:    acn.OptCnsURLAlias,
+		Description:  "Set the URL for CNS to listen on",
+		Type:         "string",
 		DefaultValue: "",
 	},
 	{
@@ -101,6 +115,7 @@ func main() {
 
 	environment := acn.GetArg(acn.OptEnvironment).(string)
 	url := acn.GetArg(acn.OptAPIServerURL).(string)
+	cnsURL := acn.GetArg(acn.OptCnsURL).(string)
 	logLevel := acn.GetArg(acn.OptLogLevel).(int)
 	logTarget := acn.GetArg(acn.OptLogTarget).(int)
 	ipamQueryInterval, _ := acn.GetArg(acn.OptIpamQueryInterval).(int)
@@ -180,7 +195,7 @@ func main() {
 	log.Printf("Running on %v", platform.GetOSInfo())
 
 	// Set CNS options.
-	httpRestService.SetOption(acn.OptAPIServerURL, url)
+	httpRestService.SetOption(acn.OptCnsURL, cnsURL)
 
 	// Start CNS.
 	if httpRestService != nil {
