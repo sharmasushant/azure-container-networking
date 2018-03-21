@@ -55,7 +55,7 @@ func setWeakHostOnInterface(ipAddress string) error {
 	ethIndexString := strconv.Itoa(targetIface.Index)
 	log.Printf("[Azure CNS] Going to setup weak host routing for interface with index[%v, %v]\n", targetIface.Index, ethIndexString)
 	if found {
-		args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", "./",
+		args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", log.GetLogDirectory(),
 			"/index",
 			ethIndexString,
 			"/operation",
@@ -112,7 +112,7 @@ func createOrUpdateWithOperation(createNetworkContainerRequest cns.CreateNetwork
 	ipv4NetStr := fmt.Sprintf("%d.%d.%d.%d", ipv4NetInt[0], ipv4NetInt[1], ipv4NetInt[2], ipv4NetInt[3])
 	log.Printf("[Azure CNS] Created netmask in string format %v", ipv4NetStr)
 
-	args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", "./",
+	args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", log.GetLogDirectory(),
 		"/name",
 		createNetworkContainerRequest.NetworkContainerid,
 		"/operation",
@@ -155,7 +155,7 @@ func deleteInterface(networkContainerID string) error {
 		return errors.New("[Azure CNS] networkContainerID is nil")
 	}
 
-	args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", "./",
+	args := []string{"/C", "AzureNetworkContainer.exe", "/logpath", log.GetLogDirectory(),
 		"/name",
 		networkContainerID,
 		"/operation",

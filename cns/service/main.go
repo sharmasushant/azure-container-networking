@@ -118,6 +118,7 @@ func main() {
 	cnsURL := acn.GetArg(acn.OptCnsURL).(string)
 	logLevel := acn.GetArg(acn.OptLogLevel).(int)
 	logTarget := acn.GetArg(acn.OptLogTarget).(int)
+	logDirectory := acn.GetArg(acn.OptLogLocation).(string)
 	ipamQueryInterval, _ := acn.GetArg(acn.OptIpamQueryInterval).(int)
 	vers := acn.GetArg(acn.OptVersion).(bool)
 
@@ -185,6 +186,10 @@ func main() {
 	// Create logging provider.
 	log.SetName(name)
 	log.SetLevel(logLevel)
+	if logDirectory != "" {
+		log.SetLogDirectory(logDirectory)
+	}
+
 	err = log.SetTarget(logTarget)
 	if err != nil {
 		fmt.Printf("Failed to configure logging: %v\n", err)
