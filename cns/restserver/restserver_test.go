@@ -293,11 +293,11 @@ func creatOrUpdateWebAppContainerWithName(t *testing.T, name string, ip string) 
 
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
-	var resp cns.Response
+	var resp cns.CreateNetworkContainerResponse
 	err = decodeResponse(w, &resp)
 	fmt.Printf("Raw response: %+v", w.Body)
 
-	if err != nil || resp.ReturnCode != 0 {
+	if err != nil || resp.Response.ReturnCode != 0 {
 		t.Errorf("CreateNetworkContainerRequest failed with response %+v Err:%+v", resp, err)
 		t.Fatal(err)
 	} else {
@@ -310,7 +310,7 @@ func creatOrUpdateWebAppContainerWithName(t *testing.T, name string, ip string) 
 
 func deleteNetworkAdapterWithName(t *testing.T, name string) error {
 	var body bytes.Buffer
-	var resp cns.Response
+	var resp cns.DeleteNetworkContainerResponse
 
 	deleteInfo := &cns.DeleteNetworkContainerRequest{
 		NetworkContainerid: "ethWebApp",
@@ -326,7 +326,7 @@ func deleteNetworkAdapterWithName(t *testing.T, name string) error {
 	mux.ServeHTTP(w, req)
 
 	err = decodeResponse(w, &resp)
-	if err != nil || resp.ReturnCode != 0 {
+	if err != nil || resp.Response.ReturnCode != 0 {
 		t.Errorf("DeleteNetworkContainer failed with response %+v Err:%+v", resp, err)
 		t.Fatal(err)
 	}
@@ -337,7 +337,7 @@ func deleteNetworkAdapterWithName(t *testing.T, name string) error {
 
 func getNetworkCotnainerStatus(t *testing.T, name string) error {
 	var body bytes.Buffer
-	var resp cns.Response
+	var resp cns.GetNetworkContainerStatusResponse
 
 	getReq := &cns.GetNetworkContainerStatusRequest{
 		NetworkContainerid: "ethWebApp",
@@ -353,7 +353,7 @@ func getNetworkCotnainerStatus(t *testing.T, name string) error {
 	mux.ServeHTTP(w, req)
 
 	err = decodeResponse(w, &resp)
-	if err != nil || resp.ReturnCode != 0 {
+	if err != nil || resp.Response.ReturnCode != 0 {
 		t.Errorf("GetNetworkContainerStatus failed with response %+v Err:%+v", resp, err)
 		t.Fatal(err)
 	}
@@ -364,7 +364,7 @@ func getNetworkCotnainerStatus(t *testing.T, name string) error {
 
 func getInterfaceForContainer(t *testing.T, name string) error {
 	var body bytes.Buffer
-	var resp cns.Response
+	var resp cns.GetInterfaceForContainerResponse
 
 	getReq := &cns.GetInterfaceForContainerRequest{
 		NetworkContainerID: "ethWebApp",
@@ -380,7 +380,7 @@ func getInterfaceForContainer(t *testing.T, name string) error {
 	mux.ServeHTTP(w, req)
 
 	err = decodeResponse(w, &resp)
-	if err != nil || resp.ReturnCode != 0 {
+	if err != nil || resp.Response.ReturnCode != 0 {
 		t.Errorf("GetInterfaceForContainer failed with response %+v Err:%+v", resp, err)
 		t.Fatal(err)
 	}
