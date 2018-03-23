@@ -983,7 +983,7 @@ func (service *httpRestService) getNetworkContainerStatus(w http.ResponseWriter,
 		containerVersion, err := service.imdsClient.GetNetworkContainerInfoFromHost(
 			req.NetworkContainerid,
 			savedReq.PrimaryInterfaceIdentifier,
-			savedReq.AutherizationToken, swiftAPIVersion)
+			savedReq.AuthorizationToken, swiftAPIVersion)
 
 		if err != nil {
 			returnCode = CallToHostFailed
