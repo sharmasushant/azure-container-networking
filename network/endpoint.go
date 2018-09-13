@@ -30,6 +30,10 @@ type endpoint struct {
 	VlanID           int
 	EnableSnatOnHost bool
 	EnableInfraVnet  bool
+	NetworkNameSpace string `json:",omitempty"`
+	ContainerID      string
+	PODName          string `json:",omitempty"`
+	PODNameSpace     string `json:",omitempty"`
 }
 
 // EndpointInfo contains read-only information about an endpoint.
@@ -49,6 +53,8 @@ type EndpointInfo struct {
 	Gateways         []net.IP
 	EnableSnatOnHost bool
 	EnableInfraVnet  bool
+	PODName          string
+	PODNameSpace     string
 	Data             map[string]interface{}
 }
 

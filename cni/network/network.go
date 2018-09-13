@@ -406,8 +406,10 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		Data:             make(map[string]interface{}),
 		DNS:              epDNSInfo,
 		Policies:         policies,
+		PODName:          k8sPodName,
+		PODNameSpace:     k8sNamespace,
 	}
-	
+
 	epPolicies := getPoliciesFromRuntimeCfg(nwCfg)
 	for _, epPolicy := range epPolicies {
 		epInfo.Policies = append(epInfo.Policies, epPolicy)
