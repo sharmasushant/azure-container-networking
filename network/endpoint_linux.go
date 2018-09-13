@@ -184,6 +184,10 @@ func (nw *network) newEndpointImpl(epInfo *EndpointInfo) (*endpoint, error) {
 		VlanID:           vlanid,
 		EnableSnatOnHost: epInfo.EnableSnatOnHost,
 		EnableInfraVnet:  epInfo.EnableInfraVnet,
+		NetworkNameSpace: epInfo.NetNsPath,
+		ContainerID:      epInfo.ContainerID,
+		PODName:          epInfo.PODName,
+		PODNameSpace:     epInfo.PODNameSpace,
 	}
 
 	for _, route := range epInfo.Routes {

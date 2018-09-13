@@ -393,6 +393,8 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		IfName:           args.IfName,
 		EnableSnatOnHost: nwCfg.EnableSnatOnHost,
 		EnableInfraVnet:  enableInfraVnet,
+		PODName:          k8sPodName,
+		PODNameSpace:     k8sNamespace,
 	}
 	epInfo.Data = make(map[string]interface{})
 
