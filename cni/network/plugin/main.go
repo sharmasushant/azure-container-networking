@@ -4,12 +4,14 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"reflect"
 
 	"github.com/Azure/azure-container-networking/cni"
 	"github.com/Azure/azure-container-networking/cni/network"
 	"github.com/Azure/azure-container-networking/common"
+	acn "github.com/Azure/azure-container-networking/common"
 	"github.com/Azure/azure-container-networking/log"
 	"github.com/Azure/azure-container-networking/telemetry"
 )
@@ -22,6 +24,22 @@ const (
 
 // Version is populated by make during build.
 var version string
+
+// Command line arguments for CNM plugin.
+var args = acn.ArgumentList{
+	{
+		Name:         acn.OptVersion,
+		Shorthand:    acn.OptVersionAlias,
+		Description:  "Print version information",
+		Type:         "bool",
+		DefaultValue: false,
+	},
+}
+
+// Prints version information.
+func printVersion() {
+	fmt.Printf("Azure CNI Version %v\n", version)
+}
 
 // If report write succeeded, mark the report flag state to false.
 func markSendReport(reportManager *telemetry.ReportManager) {
@@ -50,6 +68,16 @@ func reportPluginError(reportManager *telemetry.ReportManager, err error) {
 
 // Main is the entry point for CNI network plugin.
 func main() {
+
+	// Initialize and parse command line arguments.
+	acn.ParseArgs(&args, printVersion)
+	vers := acn.GetArg(acn.OptVersion).(bool)
+
+	if vers {
+		printVersion()
+		os.Exit(0)
+	}
+
 	var (
 		config common.PluginConfig
 		err    error
