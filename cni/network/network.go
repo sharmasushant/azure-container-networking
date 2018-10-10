@@ -393,20 +393,6 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 	}
 
 	epDNSInfo, err := getEndpointDNSSettings(nwCfg, result, k8sNamespace)
-	epInfo = &network.EndpointInfo{
-		Id:                 endpointId,
-		ContainerID:        args.ContainerID,
-		NetNsPath:          args.Netns,
-		IfName:             args.IfName,
-		EnableSnatOnHost:   nwCfg.EnableSnatOnHost,
-		EnableMultiTenancy: nwCfg.MultiTenancy,
-		EnableInfraVnet:    enableInfraVnet,
-		PODName:            k8sPodName,
-		PODNameSpace:       k8sNamespace,
-	}
-	epInfo.Data = make(map[string]interface{})
-
-	dns, err := getDNSSettings(nwCfg, result, k8sNamespace)
 	if err != nil {
 		err = plugin.Errorf("Failed to getEndpointDNSSettings: %v", err)
 		return err
@@ -420,11 +406,11 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		EnableSnatOnHost:   nwCfg.EnableSnatOnHost,
 		EnableMultiTenancy: nwCfg.MultiTenancy,
 		EnableInfraVnet:    enableInfraVnet,
+		PODName:            k8sPodName,
+		PODNameSpace:       k8sNamespace,
 		Data:               make(map[string]interface{}),
 		DNS:                epDNSInfo,
 		Policies:           policies,
-		PODName:            k8sPodName,
-		PODNameSpace:       k8sNamespace,
 	}
 
 	epPolicies := getPoliciesFromRuntimeCfg(nwCfg)
