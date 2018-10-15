@@ -412,6 +412,11 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		DNS:                epDNSInfo,
 		Policies:           policies,
 	}
+	
+	epPolicies := getPoliciesFromRuntimeCfg(nwCfg)
+	for _, epPolicy := range epPolicies {
+		epInfo.Policies = append(epInfo.Policies, epPolicy)
+	}
 
 	// Populate addresses.
 	for _, ipconfig := range result.IPs {
