@@ -403,16 +403,16 @@ func (plugin *netPlugin) Add(args *cniSkel.CmdArgs) error {
 		ContainerID:        args.ContainerID,
 		NetNsPath:          args.Netns,
 		IfName:             args.IfName,
+		Data:               make(map[string]interface{}),
+		DNS:                epDNSInfo,
+		Policies:           policies,
 		EnableSnatOnHost:   nwCfg.EnableSnatOnHost,
 		EnableMultiTenancy: nwCfg.MultiTenancy,
 		EnableInfraVnet:    enableInfraVnet,
 		PODName:            k8sPodName,
 		PODNameSpace:       k8sNamespace,
-		Data:               make(map[string]interface{}),
-		DNS:                epDNSInfo,
-		Policies:           policies,
 	}
-	
+
 	epPolicies := getPoliciesFromRuntimeCfg(nwCfg)
 	for _, epPolicy := range epPolicies {
 		epInfo.Policies = append(epInfo.Policies, epPolicy)
