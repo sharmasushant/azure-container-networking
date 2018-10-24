@@ -674,8 +674,9 @@ func (plugin *netPlugin) Update(args *cniSkel.CmdArgs) error {
 	// Query the network.
 	_, err = plugin.nm.GetNetworkInfo(networkID)
 	if err != nil {
-		plugin.Errorf("Failed to query network during CNI UPDATE: %v", err)
-		return plugin.Errorf(err.Error())
+		errMsg := fmt.Sprintf("Failed to query network during CNI UPDATE: %v", err)
+		log.Printf(errMsg)
+		return plugin.Errorf(errMsg)
 	}
 
 	// Query the existing endpoint since this is an update.
@@ -713,6 +714,7 @@ func (plugin *netPlugin) Update(args *cniSkel.CmdArgs) error {
 
 	log.Printf("Network config received from cns for [name=%v, namespace=%v] is as follows -> %+v", k8sPodName, k8sNamespace, targetNetworkConfig)
 	targetEpInfo := &network.EndpointInfo{}
+
 	// get the target routes that should replace existingEpInfo.Routes inside the network namespace
 	log.Printf("Going to collect target routes for [name=%v, namespace=%v] from targetNetworkConfig.", k8sPodName, k8sNamespace)
 	if targetNetworkConfig.Routes != nil && len(targetNetworkConfig.Routes) > 0 {
@@ -737,9 +739,19 @@ func (plugin *netPlugin) Update(args *cniSkel.CmdArgs) error {
 	}
 
 	log.Printf("Finished collecting new routes in targetEpInfo as follows: %+v", targetEpInfo.Routes)
+	log.Printf("Now saving existing infravnetaddress space if needed.")
+	for _, ns := range nwCfg.PodNamespaceForDualNetwork {
+		if k8sNamespace == ns {
+			targetEpInfo.EnableInfraVnet = true
+			targetEpInfo.InfraVnetAddressSpace = nwCfg.InfraVnetAddressSpace
+			log.Printf("Saving infravnet address space %s for [%s-%s]",
+				targetEpInfo.InfraVnetAddressSpace, existingEpInfo.PODNameSpace, existingEpInfo.PODName)
+			break
+		}
+	}
 
 	// Update the endpoint.
-	log.Printf("[cni-net] Now updating existing endpoint %v with targetNetworkConfig %+v.", existingEpInfo.Id, targetNetworkConfig)
+	log.Printf("Now updating existing endpoint %v with targetNetworkConfig %+v.", existingEpInfo.Id, targetNetworkConfig)
 	err = plugin.nm.UpdateEndpoint(networkID, existingEpInfo, targetEpInfo)
 	if err != nil {
 		err = plugin.Errorf("Failed to update endpoint: %v", err)

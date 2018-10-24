@@ -16,48 +16,50 @@ const (
 
 // Endpoint represents a container network interface.
 type endpoint struct {
-	Id                 string
-	HnsId              string `json:",omitempty"`
-	SandboxKey         string
-	IfName             string
-	HostIfName         string
-	MacAddress         net.HardwareAddr
-	InfraVnetIP        net.IPNet
-	IPAddresses        []net.IPNet
-	Gateways           []net.IP
-	DNS                DNSInfo
-	Routes             []RouteInfo
-	VlanID             int
-	EnableSnatOnHost   bool
-	EnableInfraVnet    bool
-	EnableMultitenancy bool
-	NetworkNameSpace   string `json:",omitempty"`
-	ContainerID        string
-	PODName            string `json:",omitempty"`
-	PODNameSpace       string `json:",omitempty"`
+	Id                     string
+	HnsId                  string `json:",omitempty"`
+	SandboxKey             string
+	IfName                 string
+	HostIfName             string
+	MacAddress             net.HardwareAddr
+	InfraVnetIP            net.IPNet
+	IPAddresses            []net.IPNet
+	Gateways               []net.IP
+	DNS                    DNSInfo
+	Routes                 []RouteInfo
+	VlanID                 int
+	EnableSnatOnHost       bool
+	EnableInfraVnet        bool
+	EnableMultitenancy     bool
+	NetworkNameSpace       string `json:",omitempty"`
+	ContainerID            string
+	PODName                string `json:",omitempty"`
+	PODNameSpace           string `json:",omitempty"`
+	InsfraVnetAddressSpace string `json:",omitempty"`
 }
 
 // EndpointInfo contains read-only information about an endpoint.
 type EndpointInfo struct {
-	Id                 string
-	ContainerID        string
-	NetNsPath          string
-	IfName             string
-	SandboxKey         string
-	IfIndex            int
-	MacAddress         net.HardwareAddr
-	DNS                DNSInfo
-	IPAddresses        []net.IPNet
-	InfraVnetIP        net.IPNet
-	Routes             []RouteInfo
-	Policies           []policy.Policy
-	Gateways           []net.IP
-	EnableSnatOnHost   bool
-	EnableInfraVnet    bool
-	EnableMultiTenancy bool
-	PODName            string
-	PODNameSpace       string
-	Data               map[string]interface{}
+	Id                    string
+	ContainerID           string
+	NetNsPath             string
+	IfName                string
+	SandboxKey            string
+	IfIndex               int
+	MacAddress            net.HardwareAddr
+	DNS                   DNSInfo
+	IPAddresses           []net.IPNet
+	InfraVnetIP           net.IPNet
+	Routes                []RouteInfo
+	Policies              []policy.Policy
+	Gateways              []net.IP
+	EnableSnatOnHost      bool
+	EnableInfraVnet       bool
+	EnableMultiTenancy    bool
+	PODName               string
+	PODNameSpace          string
+	Data                  map[string]interface{}
+	InfraVnetAddressSpace string
 }
 
 // RouteInfo contains information about an IP route.

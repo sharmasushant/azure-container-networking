@@ -359,7 +359,8 @@ func updateRoutes(existingEp *EndpointInfo, targetEp *EndpointInfo) error {
 	defaultDst := net.ParseIP("0.0.0.0")
 
 	for _, route := range existingEp.Routes {
-		if route.Dst.IP.String() != defaultDst.String() {
+		destination := route.Dst.IP.String()
+		if destination != defaultDst.String() || (targetEp.EnableInfraVnet && destination != targetEp.InfraVnetAddressSpace) {
 			existingRoutes[route.Dst.String()] = route
 		}
 	}
