@@ -358,9 +358,24 @@ func updateRoutes(existingEp *EndpointInfo, targetEp *EndpointInfo) error {
 	// we do not support enable/disable snat for now
 	defaultDst := net.ParseIP("0.0.0.0")
 
+	log.Printf("Going to collect routes and skip default and infravnet routes if applicable.")
+	log.Printf("Key for default route: %+v", defaultDst.String())
+
+	infraVnetKey := ""
+	if targetEp.EnableInfraVnet {
+		infraVnetSubnet := targetEp.InfraVnetAddressSpace
+		if infraVnetSubnet != "" {
+			infraVnetKey = strings.Split(infraVnetSubnet, "/")[0]
+		}
+	}
+
+	log.Printf("Key for route to infra vnet: %+v", infraVnetKey)
 	for _, route := range existingEp.Routes {
 		destination := route.Dst.IP.String()
-		if destination != defaultDst.String() || (targetEp.EnableInfraVnet && destination != targetEp.InfraVnetAddressSpace) {
+		log.Printf("Checking destination as %+v to skip or not", destination)
+		isDefaultRoute := destination == defaultDst.String()
+		isInfraVnetRoute := targetEp.EnableInfraVnet && (destination == infraVnetKey)
+		if !isDefaultRoute && !isInfraVnetRoute {
 			existingRoutes[route.Dst.String()] = route
 		}
 	}
