@@ -377,6 +377,7 @@ func updateRoutes(existingEp *EndpointInfo, targetEp *EndpointInfo) error {
 		isInfraVnetRoute := targetEp.EnableInfraVnet && (destination == infraVnetKey)
 		if !isDefaultRoute && !isInfraVnetRoute {
 			existingRoutes[route.Dst.String()] = route
+			log.Printf("%+v was skipped", destination)
 		}
 	}
 
