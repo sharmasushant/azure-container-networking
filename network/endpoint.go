@@ -16,26 +16,26 @@ const (
 
 // Endpoint represents a container network interface.
 type endpoint struct {
-	Id                     string
-	HnsId                  string `json:",omitempty"`
-	SandboxKey             string
-	IfName                 string
-	HostIfName             string
-	MacAddress             net.HardwareAddr
-	InfraVnetIP            net.IPNet
-	IPAddresses            []net.IPNet
-	Gateways               []net.IP
-	DNS                    DNSInfo
-	Routes                 []RouteInfo
-	VlanID                 int
-	EnableSnatOnHost       bool
-	EnableInfraVnet        bool
-	EnableMultitenancy     bool
-	NetworkNameSpace       string `json:",omitempty"`
-	ContainerID            string
-	PODName                string `json:",omitempty"`
-	PODNameSpace           string `json:",omitempty"`
-	InsfraVnetAddressSpace string `json:",omitempty"`
+	Id                    string
+	HnsId                 string `json:",omitempty"`
+	SandboxKey            string
+	IfName                string
+	HostIfName            string
+	MacAddress            net.HardwareAddr
+	InfraVnetIP           net.IPNet
+	IPAddresses           []net.IPNet
+	Gateways              []net.IP
+	DNS                   DNSInfo
+	Routes                []RouteInfo
+	VlanID                int
+	EnableSnatOnHost      bool
+	EnableInfraVnet       bool
+	EnableMultitenancy    bool
+	NetworkNameSpace      string `json:",omitempty"`
+	ContainerID           string
+	PODName               string `json:",omitempty"`
+	PODNameSpace          string `json:",omitempty"`
+	InfraVnetAddressSpace string `json:",omitempty"`
 }
 
 // EndpointInfo contains read-only information about an endpoint.
