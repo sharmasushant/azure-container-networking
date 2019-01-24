@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  codecov: codecov/codecov@1.0.2
 jobs:
   setup-and-test:
     # docker:
@@ -38,6 +40,8 @@ jobs:
             sudo -E env "PATH=$PATH" go test ./npm/ipsm/
             sudo -E env "PATH=$PATH" go test ./npm/
             #sudo -E env "PATH=$PATH" go test ./cns/restserver/
+    - codecov/upload:
+        file: {{ coverage_report_filepath }}
 workflows:
   version: 2
   run-tests:
